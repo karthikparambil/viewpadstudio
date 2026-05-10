@@ -1481,6 +1481,22 @@ window.addEventListener('load', () => {
     applyTransform();
     drawEdges();
     updateNodeCount();
+
+    // Hide loader
+    const loader = document.getElementById('loading-overlay');
+    if (loader) {
+        const hasShown = sessionStorage.getItem('loader-shown');
+        if (hasShown) {
+            // Already shown in this session, hide immediately
+            loader.style.display = 'none';
+        } else {
+            // First time, show animation and set flag
+            setTimeout(() => {
+                loader.classList.add('loader-hidden');
+                sessionStorage.setItem('loader-shown', 'true');
+            }, 3000);
+        }
+    }
 });
 
 // Add periodic save for safety
