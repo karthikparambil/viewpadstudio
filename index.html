@@ -7,6 +7,7 @@
   <title>Viewpad Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/png" href="assets/logo.png" sizes="512x512">
   <link
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
@@ -19,7 +20,7 @@
 
 <body>
 
-  <h2 class="sr-only">FlowForge node-based workflow editor with interactive canvas</h2>
+  <h2 class="sr-only">Viewpad Studio node-based workflow editor with interactive canvas</h2>
 
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal-card">
@@ -38,8 +39,8 @@
     <!-- ══ Sidebar ══ -->
     <div class="fw-sidebar">
       <div class="fw-sidebar-top">
-        <div class="logo-sq"><i class="ti ti-share" style="font-size:12px;color:#e1f5ee" aria-hidden="true"></i></div>
-        <span class="logo-label">FlowForge</span>
+        <div class="logo-sq"><img src="assets/logo.png" alt="Logo" style="width:100%;height:100%;object-fit:contain;border-radius:inherit"></div>
+        <span class="logo-label">Viewpad Studio</span>
       </div>
       <div class="sb-tabs">
         <div class="sb-tab active" data-tab="projects">Projects</div>
@@ -50,17 +51,17 @@
         <div
           style="padding:9px 10px;border-bottom:.5px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:6px">
           <div id="new-proj-btn"
-            style="display:flex;align-items:center;opacity:0.8;gap:6px;padding:5px 7px;border-radius:5px;color:var(--text-mid);cursor:pointer;border:0.5px dashed var(--border);font-size:10px;transition:0.2s;"
+            style="display:flex;align-items:center;opacity:0.8;gap:6px;padding:5px 7px;border-radius:5px;color:var(--text-bright);cursor:pointer;border:0.5px dashed var(--border);font-size:10px;transition:0.2s;"
             onmouseover="this.style.opacity='1';this.style.borderColor='var(--accent)';"
             onmouseout="this.style.opacity='0.8';this.style.borderColor='var(--border)';">
-            <i class="ti ti-plus" style="font-size:11px"></i> New project
+            <i class="ti ti-plus" style="font-size:30px"></i> New project
           </div>
           <div style="display:flex;gap:6px">
             <div id="import-proj-btn"
               style="flex:1;display:flex;align-items:center;justify-content:center;opacity:0.8;gap:5px;padding:5px 7px;border-radius:5px;color:var(--text-mid);cursor:pointer;border:0.5px solid var(--border);font-size:10px;transition:0.2s;"
               onmouseover="this.style.opacity='1';this.style.borderColor='var(--accent)';this.style.color='var(--accent)';"
-              onmouseout="this.style.opacity='0.8';this.style.borderColor='var(--border)';this.style.color='var(--text-mid)';">
-              <i class="ti ti-upload" style="font-size:11px"></i> Import
+              onmouseout="this.style.opacity='0.8';this.style.borderColor='var(--border)';this.style.color='var(--text-bright)';">
+              <i class="ti ti-upload" style="font-size:15px"></i> Import
             </div>
           </div>
           <input type="file" id="import-file-input" accept=".json" style="display:none">
@@ -138,7 +139,7 @@
         <span style="display:flex;align-items:center;gap:4px"><i class="ti ti-git-branch" style="font-size:10px"
             aria-hidden="true"></i> <span id="edge-count">5</span> edges</span>
         <span style="margin-left:auto" id="zoom-label">100%</span>
-        <span>— FlowForge</span>
+        <span>— Viewpad Studio</span>
       </div>
     </div>
 
