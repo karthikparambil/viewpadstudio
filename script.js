@@ -381,7 +381,15 @@ canvas.addEventListener('pointermove', e => {
 });
 canvas.addEventListener('pointerup', () => { panning = false; canvas.classList.remove('panning'); });
 let spaceDown = false;
-window.addEventListener('keydown', e => { if (e.code === 'Space') { spaceDown = true; e.preventDefault(); } });
+window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+        const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+        if (!isInput) {
+            spaceDown = true;
+            e.preventDefault();
+        }
+    }
+});
 window.addEventListener('keyup', e => { if (e.code === 'Space') spaceDown = false; });
 
 /* ═══════════════════════════════════════
