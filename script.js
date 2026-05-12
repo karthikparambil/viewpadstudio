@@ -12,6 +12,67 @@ let ctxTargetNodeId = null;
 let ctxTargetProjectId = null;
 
 /* ═══════════════════════════════════════
+   SELECTION HELPERS
+   Used for preserving cursor position during syntax highlighting
+═══════════════════════════════════════ */
+function getCaretCharacterOffsetWithin(element) {
+    let caretOffset = 0;
+    const doc = element.ownerDocument || element.document;
+    const win = doc.defaultView || doc.parentWindow;
+    let sel;
+    if (typeof win.getSelection != "undefined") {
+        sel = win.getSelection();
+        if (sel.rangeCount > 0) {
+            const range = win.getSelection().getRangeAt(0);
+            const preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+    }
+    return caretOffset;
+}
+
+function setCurrentCursorPosition(element, chars) {
+    if (chars < 0) return;
+    const selection = window.getSelection();
+    const range = createRange(element, { count: chars });
+    if (range) {
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+
+function createRange(node, chars, range) {
+    if (!range) {
+        range = document.createRange();
+        range.selectNode(node);
+        range.setStart(node, 0);
+    }
+    if (chars.count === 0) {
+        range.setEnd(node, chars.count);
+    } else if (node && chars.count > 0) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            if (node.textContent.length < chars.count) {
+                chars.count -= node.textContent.length;
+            } else {
+                range.setEnd(node, chars.count);
+                chars.count = 0;
+            }
+        } else {
+            for (let lp = 0; lp < node.childNodes.length; lp++) {
+                range = createRange(node.childNodes[lp], chars, range);
+                if (chars.count === 0) {
+                    break;
+                }
+            }
+        }
+    }
+    return range;
+}
+
+/* ═══════════════════════════════════════
    PROJECTS
 ═══════════════════════════════════════ */
 const PROJECTS = [];
@@ -565,6 +626,7 @@ function rpInsertCode(nodeId) {
     const code = document.createElement('code');
     code.className = 'language-javascript';
     code.setAttribute('contenteditable', 'true');
+    code.style.outline = 'none';
     code.textContent = '// code here';
     pre.appendChild(code);
     const sel = window.getSelection();
@@ -572,7 +634,7 @@ function rpInsertCode(nodeId) {
         const range = sel.getRangeAt(0);
         range.deleteContents();
         range.insertNode(pre);
-        range.setStartAfter(pre);
+        range.setStart(code, 0);
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
@@ -580,12 +642,28 @@ function rpInsertCode(nodeId) {
         editor.appendChild(pre);
     }
     try { hljs.highlightElement(code); } catch (e) { }
-    // Re-highlight on code edit
+
+    code.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const br = document.createTextNode('\n');
+            range.insertNode(br);
+            range.setStartAfter(br);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            code.dispatchEvent(new Event('input'));
+        }
+    });
+
     code.addEventListener('input', () => {
-        // Remove hljs classes before re-highlighting
+        const offset = getCaretCharacterOffsetWithin(code);
         code.removeAttribute('data-highlighted');
         code.className = 'language-javascript';
         try { hljs.highlightElement(code); } catch (e) { }
+        setCurrentCursorPosition(code, offset);
         if (nodeId) nodeNotes[nodeId] = editor.innerHTML;
         saveToStorage();
     });
@@ -738,7 +816,43 @@ function renderDetailPanel(id) {
     if (editor) {
         editor.innerHTML = nodeNotes[id] || '';
         // Re-highlight any existing code blocks
-        editor.querySelectorAll('pre code').forEach(b => { try { hljs.highlightElement(b); } catch (e) { } });
+        editor.querySelectorAll('pre code').forEach(code => {
+            try { hljs.highlightElement(code); } catch (e) { }
+            // Rebind listeners after highlight (since it replaces innerHTML)
+            // But highlightElement actually modifies the existing element's children.
+            // If it replaces children, we might need to rebind 'input' if it was on child nodes, 
+            // but here 'input' is on 'code' itself, which is fine.
+            
+            // However, existing code blocks saved in storage also need these listeners!
+            if (!code._listenersBound) {
+                code._listenersBound = true;
+
+                code.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const selection = window.getSelection();
+                        const range = selection.getRangeAt(0);
+                        const br = document.createTextNode('\n');
+                        range.insertNode(br);
+                        range.setStartAfter(br);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        code.dispatchEvent(new Event('input'));
+                    }
+                });
+
+                code.addEventListener('input', () => {
+                    const offset = getCaretCharacterOffsetWithin(code);
+                    code.removeAttribute('data-highlighted');
+                    code.className = 'language-javascript';
+                    try { hljs.highlightElement(code); } catch (e) { }
+                    setCurrentCursorPosition(code, offset);
+                    if (id) nodeNotes[id] = editor.innerHTML;
+                    saveToStorage();
+                });
+            }
+        });
         // Save on any input
         editor.addEventListener('input', () => {
             nodeNotes[id] = editor.innerHTML;
